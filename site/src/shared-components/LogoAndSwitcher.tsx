@@ -1,5 +1,6 @@
 import { useIsMobile } from '../helpers/util';
 import { useState } from 'react';
+import type { MouseEventHandler } from 'react';
 
 import {
   Box,
@@ -13,6 +14,7 @@ import {
   Stack,
   Typography,
   ButtonGroup,
+  CircularProgress,
 } from '@mui/material';
 import { EventNote, Route, UnfoldMore } from '@mui/icons-material';
 
@@ -24,6 +26,26 @@ const BLUE = '#305db7';
 export function LogoAndSwitcher() {
   const isMobile = useIsMobile();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [schedulerLoading, setSchedulerLoading] = useState(false);
+
+  const handleSchedulerClick: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement> = (event) => {
+    if (schedulerLoading) {
+      event.preventDefault();
+      return;
+    }
+
+    event.preventDefault();
+    setSchedulerLoading(true);
+    setTimeout(() => {
+      window.location.href = 'https://antalmanac.com/';
+    }, 0);
+  };
+
+  const schedulerIcon = schedulerLoading ? (
+    <CircularProgress size={20} sx={{ margin: 0 }} color="inherit" />
+  ) : (
+    <EventNote sx={{ fontSize: 18 }} />
+  );
 
   const desktopButtonSx = {
     fontSize: 14,
@@ -78,14 +100,18 @@ export function LogoAndSwitcher() {
               sx={{ width: '200px' }}
             >
               <MenuItem
-                onClick={() => setAnchorEl(null)}
-                component={Link}
+                onClick={(event) => {
+                  handleSchedulerClick(event);
+                  if (!event.defaultPrevented) {
+                    setAnchorEl(null);
+                  }
+                }}
+                component="a"
                 href="https://antalmanac.com/"
+                disabled={schedulerLoading}
                 sx={{ minHeight: 'fit-content', textDecoration: 'none', color: 'inherit', height: '34.5px' }}
               >
-                <ListItemIcon>
-                  <EventNote sx={{ fontSize: '18px' }} />
-                </ListItemIcon>
+                <ListItemIcon>{schedulerIcon}</ListItemIcon>
                 <Typography
                   sx={{
                     fontSize: '15px',
@@ -99,7 +125,7 @@ export function LogoAndSwitcher() {
               <MenuItem
                 selected
                 onClick={() => setAnchorEl(null)}
-                component={Link}
+                component="a"
                 href="/planner"
                 sx={{ minHeight: 'fit-content', textDecoration: 'none', color: 'inherit', height: '34.5px' }}
               >
@@ -121,19 +147,21 @@ export function LogoAndSwitcher() {
         </>
       ) : (
         <Stack direction="row" alignItems="center" gap={2}>
-          <Link href={'/planner'}>
+          <Link href={'/planner'} component="a">
             <Logo />
           </Link>
           <ButtonGroup variant="outlined" color="inherit">
             <Button
-              startIcon={<EventNote />}
+              startIcon={schedulerIcon}
+              onClick={handleSchedulerClick}
+              disabled={schedulerLoading}
               sx={{
                 color: 'white',
                 bgcolor: BLUE,
                 ...desktopButtonSx,
               }}
               variant="outlined"
-              component={Link}
+              component="a"
               href="https://antalmanac.com/"
             >
               Scheduler
@@ -147,7 +175,7 @@ export function LogoAndSwitcher() {
                 ...desktopButtonSx,
               }}
               variant="contained"
-              component={Link}
+              component="a"
               href="/planner"
             >
               Planner
